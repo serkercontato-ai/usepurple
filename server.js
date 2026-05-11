@@ -8,8 +8,11 @@ const fs = require("fs");
 const path = require("path");
 const ADMIN_KEY = "nextageadmin123";
 const app = express();
-const PORT = 3000;
-const DB_PATH = "./database.json";
+const PORT = process.env.PORT || 3000;
+
+const client = new MongoClient(process.env.MONGODB_URI);
+
+let db;
 
 app.use(express.urlencoded({ extended:true }));
 app.use(express.json());
@@ -25,7 +28,7 @@ app.use(session({
   saveUninitialized:false
 }));
 
-app.use("/uploads", express.static(path.join(__dirname,"uploads")));
+// app.use("/uploads", express.static(path.join(__dirname,"uploads")));
 app.use("/assets", express.static(path.join(__dirname,"assets")));
 
 /*
@@ -42,24 +45,53 @@ ensureFolder(path.join(__dirname,"uploads","musics"));
 ensureFolder(path.join(__dirname,"uploads","videos"));
 */
 
-function loadDB(){
-  if(!fs.existsSync(DB_PATH)){
-    fs.writeFileSync(DB_PATH, JSON.stringify({ users:[] },null,2));
+async function connectDB(){
+
+  if(!db){
+
+    await client.connect();
+
+    db = client.db("purple");
+
+    console.log("Mongo conectado");
+
   }
 
-  return JSON.parse(fs.readFileSync(DB_PATH,"utf8"));
+  return db;
+
 }
 
-function saveDB(data){
-  fs.writeFileSync(DB_PATH, JSON.stringify(data,null,2));
+async function loadDB(){
+
+  const database = await connectDB();
+
+  const users = await database
+    .collection("users")
+    .find({})
+    .toArray();
+
+  return { users };
+
 }
 
-function getUser(req){
+async function saveDB(data){
+
+  const database = await connectDB();
+
+  await database.collection("users").deleteMany({});
+
+  if(data.users?.length){
+    await database.collection("users").insertMany(data.users);
+  }
+
+}
+
+async function getUser(req){
   const username = req.cookies.purple_user;
 
   if(!username) return null;
 
-  const db = loadDB();
+  const db = await loadDB();
 
   return db.users.find(u=>u.username === username);
 }
@@ -133,8 +165,8 @@ app.get("/login",(req,res)=>{
   res.sendFile(path.join(__dirname,"login.html"));
 });
 
-app.post("/login",(req,res)=>{
-  const db = loadDB();
+app.post("/login", async(req,res)=>{
+  const db = await loadDB();
 
   const login = String(req.body.username || req.body.email || "")
     .trim()
@@ -169,8 +201,8 @@ app.get("/register",(req,res)=>{
   res.sendFile(path.join(__dirname,"register.html"));
 });
 
-app.post("/register",(req,res)=>{
-  const db = loadDB();
+app.post("/register", async(req,res)=>{
+  const db = await loadDB();
 
   const username = String(req.body.username || "")
     .trim()
@@ -218,7 +250,7 @@ app.post("/register",(req,res)=>{
   newUser.uid = db.users.length + 1;
 
   db.users.push(newUser);
-  saveDB(db);
+  await saveDB(db);
 
   res.cookie("purple_user", newUser.username);
   res.redirect("/dashboard");
@@ -226,8 +258,8 @@ app.post("/register",(req,res)=>{
 
 /* DASHBOARD */
 
-app.get("/dashboard",(req,res)=>{
-  const user = getUser(req);
+app.get("/dashboard", async(req,res)=>{
+  const user = await getUser(req);
 
   if(!user){
     return res.redirect("/login");
@@ -239,7 +271,7 @@ app.get("/dashboard",(req,res)=>{
 /* API */
 
 app.get("/api/me",(req,res)=>{
-  const user = getUser(req);
+  const user = await getUser(req);
 
   if(!user){
     return res.json({ logged:false });
@@ -254,13 +286,13 @@ app.get("/api/me",(req,res)=>{
 /* SAVE PROFILE */
 
 app.post("/save-profile",async(req,res)=>{
-  const user = getUser(req);
+  const user = await getUser(req);
 
   if(!user){
     return res.json({ success:false });
   }
 
-  const db = loadDB();
+  const db = await loadDB();
 
   const index = db.users.findIndex(u=>u.username === user.username);
 
@@ -383,7 +415,7 @@ app.post("/save-profile",async(req,res)=>{
     target.video = "/uploads/videos/" + fileName;
   }
 
-  saveDB(db);
+  await saveDB(db);
 
   res.json({
     success:true,
@@ -393,14 +425,14 @@ app.post("/save-profile",async(req,res)=>{
 
 /* SAVE PREMIUM */
 
-app.post("/save-premium",(req,res)=>{
-  const user = getUser(req);
+app.post("/save-premium", async(req,res)=>{
+ const user = await getUser(req);
 
   if(!user){
     return res.json({ success:false });
   }
 
-  const db = loadDB();
+  const db = await loadDB();
 
   const target = db.users.find(u=>u.username === user.username);
 
@@ -416,7 +448,7 @@ app.post("/save-premium",(req,res)=>{
   target.premiumRgbName = req.body.premiumRgbName || "off";
   target.premiumRgbAvatar = req.body.premiumRgbAvatar || "off";
 
-  saveDB(db);
+  await saveDB(db);
 
   res.json({
     success:true,
@@ -428,9 +460,9 @@ app.post("/save-premium",(req,res)=>{
 
 /* PREMIUM */
 
-app.get("/premium",(req,res)=>{
+app.get("/premium", async(req,res)=>{
 
-const user = getUser(req);
+const user = await getUser(req);
 
 if(!user){
 return res.redirect("/login");
@@ -508,7 +540,7 @@ app.post("/create-payment", async(req,res)=>{
 
 try{
 
-const user = getUser(req);
+const user = await getUser(req);
 
 if(!user){
 return res.json({
@@ -561,7 +593,7 @@ error:String(err)
 
 /* PAYMENT SUCCESS */
 
-app.get("/payment-success",(req,res)=>{
+app.get("/payment-success", async(req,res)=>{
 
 const user = getUser(req);
 
@@ -569,7 +601,7 @@ if(!user){
 return res.redirect("/login");
 }
 
-const db = loadDB();
+const db = await loadDB();
 
 const target = db.users.find(
 u=>u.username === user.username
@@ -586,7 +618,7 @@ target.iconGlow = "on";
 target.premiumRgbName = "on";
 target.premiumRgbAvatar = "on";
 
-saveDB(db);
+await saveDB(db);
 
 }
 
@@ -660,7 +692,7 @@ app.get("/auth/discord/callback",async(req,res)=>{
 
     const discordUser = await userReq.json();
 
-    const db = loadDB();
+    const db = await loadDB();
 
     let username =
       String(discordUser.username || "user")
@@ -695,7 +727,7 @@ app.get("/auth/discord/callback",async(req,res)=>{
 
     }
 
-    saveDB(db);
+    await saveDB(db);
 
     res.cookie("purple_user", user.username);
 
@@ -744,7 +776,7 @@ app.get("/admin",(req,res)=>{
   `);
 });
 
-app.post("/admin/premium",(req,res)=>{
+app.post("/admin/premium", async(req,res)=>{
   if(String(req.query.key) !== String(ADMIN_KEY)){
     return res.send("Sem acesso.");
   }
@@ -752,7 +784,7 @@ app.post("/admin/premium",(req,res)=>{
   const uid = Number(req.body.uid);
   const action = req.body.action;
 
-  const db = loadDB();
+  const db = await loadDB();
 
   const user = db.users.find(
     u => Number(u.uid) === uid
@@ -789,7 +821,7 @@ app.post("/admin/premium",(req,res)=>{
 
   }
 
-  saveDB(db);
+  await saveDB(db);
 
   res.send(`
   <body style="background:#07000d;color:white;font-family:Arial;padding:40px">
@@ -806,14 +838,14 @@ app.post("/admin/premium",(req,res)=>{
   `);
 });
 
-app.get("/:username",(req,res,next)=>{
+app.get("/:username", async(req,res,next)=>{
   const username = req.params.username;
 
   if(username.includes(".")){
     return next();
   }
 
-  const db = loadDB();
+  const db = await loadDB();
 
   const user = db.users.find(
     u=>String(u.username || "").toLowerCase() === String(username || "").toLowerCase()
@@ -830,7 +862,7 @@ app.get("/:username",(req,res,next)=>{
     viewedBy.push(viewer);
     user.viewedBy = viewedBy;
     user.views = viewedBy.length;
-    saveDB(db);
+    await saveDB(db);
   }
 
   fs.readFile(path.join(__dirname,"perfil.html"),"utf8",(err,data)=>{
