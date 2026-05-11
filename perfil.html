@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{username}}</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
+}
+
+body{
+  min-height:100vh;
+  background:#050008;
+  color:white;
+  overflow:hidden;
+}
+
+.bg-video{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  z-index:-4;
+}
+
+.bg{
+  position:fixed;
+  inset:0;
+  background-size:cover;
+  background-position:center;
+  z-index:-3;
+}
+
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  z-index:-2;
+}
+
+.center{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:20px;
+}
+
+.card{
+  width:100%;
+  max-width:430px;
+  padding:40px 28px;
+  border-radius:32px;
+  background:rgba(0,0,0,var(--cardOpacity));
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 0 60px rgba(168,85,247,.25);
+  backdrop-filter:blur(12px);
+}
+
+.card.no-card{
+  background:transparent;
+  border:none;
+  box-shadow:none;
+  backdrop-filter:none;
+}
+
+.avatar{
+  width:125px;
+  height:125px;
+  border-radius:50%;
+  object-fit:cover;
+  border:3px solid var(--accent);
+  box-shadow:0 0 25px var(--accent);
+  margin-bottom:18px;
+}
+
+.username{
+  font-size:52px;
+  font-weight:900;
+  color:var(--accent);
+  margin-bottom:10px;
+  word-break:break-word;
+}
+
+.username.gradient-name{
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+.glow-on{
+  text-shadow:
+  0 0 14px var(--accent),
+  0 0 35px var(--accent);
+}
+
+.badge{
+  display:inline-block;
+  padding:8px 15px;
+  border-radius:999px;
+  background:linear-gradient(90deg,#ffd86b,#ffb347);
+  color:#111;
+  font-size:12px;
+  font-weight:900;
+  margin-bottom:16px;
+}
+
+.badge i{
+  margin-right:5px;
+}
+
+.bio{
+  opacity:.9;
+  line-height:1.6;
+  margin-bottom:14px;
+}
+
+.location{
+  margin-bottom:22px;
+}
+
+.socials{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:18px;
+  font-size:32px;
+  margin-bottom:22px;
+}
+
+.socials a,
+.socials a i{
+  color:var(--icon-color) !important;
+  text-decoration:none !important;
+  text-shadow:none !important;
+  box-shadow:none !important;
+  filter:none;
+  transition:.2s;
+}
+
+.socials.icon-glow a i{
+  filter:
+  drop-shadow(0 0 2px rgba(255,255,255,.45))
+  drop-shadow(0 0 7px rgba(255,255,255,.35)) !important;
+}
+
+.views{
+  opacity:.75;
+  font-size:14px;
+}
+
+.music-btn{
+  position:fixed;
+  right:25px;
+  bottom:25px;
+  width:54px;
+  height:54px;
+  border:none;
+  border-radius:50%;
+  background:#a855f7;
+  color:white;
+  font-size:20px;
+  cursor:pointer;
+  box-shadow:0 0 25px rgba(168,85,247,.45);
+  z-index:20;
+}
+
+.enter-screen{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.86);
+  backdrop-filter:blur(14px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  cursor:pointer;
+  font-size:34px;
+  font-weight:900;
+  color:white;
+  transition:.3s;
+}
+
+.avatar.premium-user{
+  animation:rgbBorder 4s linear infinite;
+}
+
+@keyframes rgbBorder{
+  0%{border-color:#ff0000;box-shadow:0 0 18px #ff0000;}
+  25%{border-color:#00ff88;box-shadow:0 0 18px #00ff88;}
+  50%{border-color:#00a2ff;box-shadow:0 0 18px #00a2ff;}
+  75%{border-color:#ff00ff;box-shadow:0 0 18px #ff00ff;}
+  100%{border-color:#ff0000;box-shadow:0 0 18px #ff0000;}
+}
+
+.premium-name{
+  background:linear-gradient(90deg,#ff0000,#00ff88,#00a2ff,#ff00ff,#ff0000);
+  background-size:400% 400%;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:rgbText 5s linear infinite;
+}
+
+@keyframes rgbText{
+  0%{background-position:0% 50%;}
+  100%{background-position:100% 50%;}
+}
+</style>
+</head>
+
+<body>
+
+{{videoBlock}}
+
+<div class="bg" id="profileBg"></div>
+<div class="overlay"></div>
+
+<div class="center">
+  <div class="card" id="profileCard">
+    <img class="avatar {{premiumClass}}" src="{{avatar}}" onerror="this.src='/assets/logo.png'">
+
+    <div class="username {{glowClass}} {{premiumNameClass}} {{gradientClass}}">
+      {{username}}
+    </div>
+
+    {{premiumBlock}}
+    {{bioBlock}}
+    {{locationBlock}}
+    {{socialsBlock}}
+    {{viewsBlock}}
+  </div>
+</div>
+
+{{musicBlock}}
+
+<script>
+const accentColor = "{{accentColor}}" || "#a855f7";
+const accentColor2 = "{{accentColor2}}" || "#ff00ff";
+const iconColor = "{{iconColor}}" || "#ffffff";
+const banner = "{{banner}}";
+const backgroundMode = "{{backgroundMode}}" || "none";
+
+const brightness = Number("{{brightness}}" || 100);
+const blur = Number("{{blur}}" || 0);
+const opacity = Number("{{opacity}}" || 20);
+const cardOpacity = Number("{{cardOpacity}}" || 45);
+const showCard = "{{showCard}}" || "on";
+
+document.documentElement.style.setProperty("--accent", accentColor);
+document.documentElement.style.setProperty("--accent2", accentColor2);
+document.documentElement.style.setProperty("--icon", iconColor);
+document.documentElement.style.setProperty("--icon-color", iconColor);
+document.documentElement.style.setProperty("--cardOpacity", cardOpacity / 100);
+
+const bg = document.getElementById("profileBg");
+
+if(backgroundMode === "image" && banner){
+  bg.style.backgroundImage = `url('${banner}')`;
+}else{
+  bg.style.backgroundImage = "none";
+}
+
+bg.style.filter = `brightness(${brightness}%) blur(${blur}px)`;
+bg.style.opacity = String(1 - (opacity / 100));
+
+const card = document.getElementById("profileCard");
+
+if(showCard !== "on" || cardOpacity <= 0){
+  card.classList.add("no-card");
+}
+
+const btn = document.getElementById("musicBtn");
+const audio = document.getElementById("bgMusic");
+const enterScreen = document.getElementById("enterScreen");
+
+if(audio && enterScreen){
+  enterScreen.onclick = async ()=>{
+    enterScreen.style.opacity = "0";
+    setTimeout(()=>enterScreen.remove(),350);
+    try{
+      audio.volume = 1;
+      await audio.play();
+    }catch(e){}
+  };
+}
+
+if(btn && audio){
+  btn.onclick = ()=>{
+    if(audio.paused){
+      audio.play();
+      btn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+    }else{
+      audio.pause();
+      btn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
+    }
+  };
+}
+</script>
+
+</body>
+</html>
