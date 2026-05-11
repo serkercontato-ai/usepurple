@@ -957,10 +957,4 @@ app.get("/:username",(req,res,next)=>{
 
 /* START */
 
-if(process.env.NODE_ENV !== "production"){
-app.listen(PORT,()=>{
-console.log("Servidor rodando");
-});
-}
-
 module.exports = app;
