@@ -1,14 +1,14 @@
 require("dotenv").config();
 
+const express = require("express");
 const { MongoClient } = require("mongodb");
 const session = require("express-session");
 const fileUpload = require("express-fileupload");
 const cookieParser = require("cookie-parser");
 const fs = require("fs");
 const path = require("path");
-const ADMIN_KEY = "nextageadmin123";
-const app = express();
 const PORT = process.env.PORT || 3000;
+const app = express();
 
 const client = new MongoClient(process.env.MONGODB_URI);
 
