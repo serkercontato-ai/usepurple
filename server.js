@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-const express = require("express");
+const { MongoClient } = require("mongodb");
 const session = require("express-session");
 const fileUpload = require("express-fileupload");
 const cookieParser = require("cookie-parser");
@@ -270,7 +270,7 @@ app.get("/dashboard", async(req,res)=>{
 
 /* API */
 
-app.get("/api/me",(req,res)=>{
+app.get("/api/me", async(req,res)=>{
   const user = await getUser(req);
 
   if(!user){
@@ -595,7 +595,7 @@ error:String(err)
 
 app.get("/payment-success", async(req,res)=>{
 
-const user = getUser(req);
+const user = await getUser(req);
 
 if(!user){
 return res.redirect("/login");
