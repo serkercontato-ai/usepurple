@@ -28,10 +28,11 @@ app.use(session({
 app.use("/uploads", express.static(path.join(__dirname,"uploads")));
 app.use("/assets", express.static(path.join(__dirname,"assets")));
 
+/*
 function ensureFolder(folder){
-  if(!fs.existsSync(folder)){
-    fs.mkdirSync(folder,{ recursive:true });
-  }
+if(!fs.existsSync(folder)){
+fs.mkdirSync(folder,{ recursive:true });
+}
 }
 
 ensureFolder(path.join(__dirname,"uploads"));
@@ -39,6 +40,7 @@ ensureFolder(path.join(__dirname,"uploads","avatars"));
 ensureFolder(path.join(__dirname,"uploads","banners"));
 ensureFolder(path.join(__dirname,"uploads","musics"));
 ensureFolder(path.join(__dirname,"uploads","videos"));
+*/
 
 function loadDB(){
   if(!fs.existsSync(DB_PATH)){
