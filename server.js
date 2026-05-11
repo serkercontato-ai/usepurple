@@ -550,25 +550,35 @@ error:"Faça login."
 }
 
 const response = await fetch(
-"https://api.mercadopago.com/checkout/preferences",
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json",
-"Authorization":"Bearer " + process.env.MP_ACCESS_TOKEN
-},
-body:JSON.stringify({
-items:[
-{
-title:"Premium Purple",
-quantity:1,
-currency_id:"BRL",
-unit_price:Number(process.env.PREMIUM_PRICE || 19.90)
-}
-],
-external_reference:user.username
-})
-}
+  "https://api.mercadopago.com/checkout/preferences",
+  {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":"Bearer " + process.env.MP_ACCESS_TOKEN
+    },
+
+    body:JSON.stringify({
+      items:[
+        {
+          title:'Premium Purple',
+          quantity:1,
+          currency_id:'BRL',
+          unit_price:Number(process.env.PREMIUM_PRICE || 19.90)
+        }
+      ],
+
+      external_reference:user.username,
+
+      back_urls:{
+        success:`${process.env.BASE_URL}/payment-success`,
+        failure:`${process.env.BASE_URL}/payment-failure`,
+        pending:`${process.env.BASE_URL}/payment-pending`
+      },
+
+      auto_return:"approved"
+    })
+  }
 );
 
 const data = await response.json();
