@@ -796,7 +796,7 @@ controle o estilo do seu perfil público.
 
 <div class="card">
 
-<form id="profileForm">
+<form id="profileForm" enctype="multipart/form-data">
 
 <label>Username</label>
 
@@ -993,6 +993,7 @@ accept="image/*">
 
 <input
 type="file"
+id="videoInput"
 name="video"
 accept="video/*">
 
@@ -1006,6 +1007,7 @@ accept="video/*">
 
 <input
 type="file"
+id="musicInput"
 name="music"
 accept="audio/*">
 
@@ -1048,6 +1050,27 @@ Ver perfil
 class="preview-bg"
 id="previewBg">
 </div>
+
+<video
+id="previewVideo"
+style="
+position:absolute;
+inset:0;
+width:100%;
+height:100%;
+object-fit:cover;
+display:none;
+"
+autoplay
+muted
+loop
+playsinline>
+</video>
+
+<audio
+id="previewMusic"
+loop>
+</audio>
 
 <div class="preview-overlay"></div>
 
@@ -1647,6 +1670,28 @@ document.getElementById("previewBg").style.backgroundImage =
 
 }
 
+if(currentUser.video){
+
+const video =
+document.getElementById("previewVideo");
+
+video.src = currentUser.video;
+video.style.display = "block";
+video.load();
+
+}
+
+if(currentUser.music){
+
+const audio =
+document.getElementById("previewMusic");
+
+audio.src = currentUser.music;
+audio.volume = 0.5;
+audio.load();
+
+}
+
 /* PREMIUM */
 
 if(currentUser.plan === "PREMIUM"){
@@ -1922,6 +1967,55 @@ reader.readAsDataURL(file);
 
 });
 
+/* VIDEO PREVIEW */
+
+document
+.getElementById("videoInput")
+.addEventListener("change",(e)=>{
+
+const file =
+e.target.files[0];
+
+if(!file) return;
+
+const url =
+URL.createObjectURL(file);
+
+const video =
+document.getElementById("previewVideo");
+
+video.src = url;
+video.style.display = "block";
+video.load();
+
+document.getElementById("backgroundMode").value = "video";
+
+});
+
+/* MUSIC PREVIEW */
+
+document
+.getElementById("musicInput")
+.addEventListener("change",(e)=>{
+
+const file =
+e.target.files[0];
+
+if(!file) return;
+
+const url =
+URL.createObjectURL(file);
+
+const audio =
+document.getElementById("previewMusic");
+
+audio.src = url;
+audio.volume = 0.5;
+audio.load();
+audio.play().catch(()=>{});
+
+});
+
 /* VIEW PROFILE */
 
 function abrirPerfil(){
@@ -2080,6 +2174,31 @@ await req.json();
 if(res.success){
 
 currentUser = res.user || currentUser;
+
+if(currentUser.avatar){
+  document.getElementById("miniAvatar").src = currentUser.avatar;
+  document.getElementById("previewAvatar").src = currentUser.avatar;
+}
+
+if(currentUser.banner){
+  document.getElementById("previewBg").style.backgroundImage =
+  `url('${currentUser.banner}')`;
+}
+
+if(currentUser.video){
+  const video = document.getElementById("previewVideo");
+  video.src = currentUser.video;
+  video.style.display = "block";
+  video.load();
+}
+
+if(currentUser.music){
+  const audio = document.getElementById("previewMusic");
+  audio.src = currentUser.music;
+  audio.volume = 0.5;
+  audio.load();
+}
+
 showToast();
 
 }else{
