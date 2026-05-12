@@ -390,6 +390,22 @@ app.post("/save-profile",async(req,res)=>{
   target.github = req.body.github || "";
   target.steam = req.body.steam || "";
 
+  if(req.body.avatar){
+target.avatar = req.body.avatar;
+}
+
+if(req.body.banner){
+target.banner = req.body.banner;
+}
+
+if(req.body.music){
+target.music = req.body.music;
+}
+
+if(req.body.video){
+target.video = req.body.video;
+}
+
   if(req.files?.avatar){
     target.avatar = await uploadToCloudinary(
       req.files.avatar,
