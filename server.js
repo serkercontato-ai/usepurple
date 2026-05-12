@@ -853,25 +853,22 @@ app.post("/admin/premium", async(req,res)=>{
 });
 
 app.get("/:username", async(req,res,next)=>{
-  const username = req.params.username;
 
-  if(username.includes(".")){
-    return next();
-  }
+const username = req.params.username;
 
-  const db = await loadDB();
-
-if(!db.users){
-  db.users = [];
+if(username.includes(".")){
+  return next();
 }
 
+const db = await loadDB();
+
 const user = db.users.find(
-  u => Number(u.uid) === uid
+  u=>String(u.username || "").toLowerCase() === String(username || "").toLowerCase()
 );
 
-  if(!user){
-    return res.send("Perfil não encontrado.");
-  }
+if(!user){
+  return res.send("Perfil não encontrado.");
+}
 
   let viewedBy = user.viewedBy || [];
   const viewer = req.ip;
