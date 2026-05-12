@@ -799,9 +799,9 @@ app.post("/admin/premium", async(req,res)=>{
   const uid = Number(req.body.uid);
   const action = req.body.action;
 
- const user = await usersCollection.findOne({
-  uid:uid
-});
+ const user = db.users.find(
+  u => Number(u.uid) === uid
+);
 
   if(!user){
     return res.send("Usuário não encontrado.");
