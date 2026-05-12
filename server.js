@@ -4,6 +4,31 @@ const express = require("express");
 const ADMIN_KEY = "nextageadmin123";
 const { MongoClient } = require("mongodb");
 const session = require("express-session");
+const express = require("express");
+const multer = require("multer");
+
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+async function uploadToCloudinary(file,tempName){
+
+  const result = await cloudinary.uploader.upload(
+    file.tempFilePath,
+    {
+      folder:"usepurple",
+      resource_type:"auto",
+      public_id:tempName
+    }
+  );
+
+  return result.secure_url;
+}
 const fileUpload = require("express-fileupload");
 const cookieParser = require("cookie-parser");
 const fs = require("fs");
@@ -20,6 +45,8 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use(fileUpload({
+  useTempFiles:true,
+  tempFileDir:"/tmp/",
   limits:{ fileSize:300 * 1024 * 1024 }
 }));
 
@@ -377,34 +404,32 @@ app.post("/save-profile",async(req,res)=>{
   target.steam = req.body.steam || "";
 
   if(req.files?.avatar){
-    const avatar = req.files.avatar;
-    const fileName = Date.now() + "-" + avatar.name;
-    const uploadPath = path.join(__dirname,"uploads","avatars",fileName);
+  target.avatar = await uploadToCloudinary(
+    req.files.avatar,
+    "avatar_" + Date.now()
+  );
+}
 
-    await avatar.mv(uploadPath);
+if(req.files?.banner){
+  target.banner = await uploadToCloudinary(
+    req.files.banner,
+    "banner_" + Date.now()
+  );
+}
 
-    target.avatar = "/uploads/avatars/" + fileName;
-  }
+if(req.files?.music){
+  target.music = await uploadToCloudinary(
+    req.files.music,
+    "music_" + Date.now()
+  );
+}
 
-  if(req.files?.banner){
-    const banner = req.files.banner;
-    const fileName = Date.now() + "-" + banner.name;
-    const uploadPath = path.join(__dirname,"uploads","banners",fileName);
-
-    await banner.mv(uploadPath);
-
-    target.banner = "/uploads/banners/" + fileName;
-  }
-
-  if(req.files?.music){
-    const music = req.files.music;
-    const fileName = Date.now() + "-" + music.name;
-    const uploadPath = path.join(__dirname,"uploads","musics",fileName);
-
-    await music.mv(uploadPath);
-
-    target.music = "/uploads/musics/" + fileName;
-  }
+if(req.files?.video){
+  target.video = await uploadToCloudinary(
+    req.files.video,
+    "video_" + Date.now()
+  );
+}
 
   if(req.files?.video){
     const video = req.files.video;
