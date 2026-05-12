@@ -834,12 +834,8 @@ app.post("/admin/premium", async(req,res)=>{
 
   }
 
-  await usersCollection.updateOne(
-  { uid:uid },
-  {
-    $set:user
-  }
-);
+
+  await saveDB(db);
 
   res.send(`
   <body style="background:#07000d;color:white;font-family:Arial;padding:40px">
