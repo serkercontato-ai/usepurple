@@ -43,9 +43,13 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use(fileUpload({
-  useTempFiles:true,
-  tempFileDir:"/tmp/",
-  limits:{ fileSize:300 * 1024 * 1024 }
+useTempFiles:true,
+tempFileDir:'/tmp/',
+limits:{
+fileSize:50 * 1024 * 1024
+},
+abortOnLimit:true,
+responseOnLimit:"Arquivo muito grande"
 }));
 
 app.use(session({
