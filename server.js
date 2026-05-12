@@ -433,6 +433,14 @@ target.video = req.body.video;
       "video_" + Date.now()
     );
   }
+  
+  console.log("MIDIAS SALVAS:", {
+avatar: target.avatar,
+banner: target.banner,
+music: target.music,
+video: target.video,
+backgroundMode: target.backgroundMode
+});
 
   await saveDB(db);
 
