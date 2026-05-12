@@ -4,7 +4,6 @@ const express = require("express");
 const ADMIN_KEY = "nextageadmin123";
 const { MongoClient } = require("mongodb");
 const session = require("express-session");
-const express = require("express");
 
 const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
