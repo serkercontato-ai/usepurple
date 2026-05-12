@@ -6,7 +6,6 @@ const { MongoClient } = require("mongodb");
 const session = require("express-session");
 
 const cloudinary = require("cloudinary").v2;
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -15,7 +14,6 @@ cloudinary.config({
 });
 
 async function uploadToCloudinary(file,tempName){
-
   const result = await cloudinary.uploader.upload(
     file.tempFilePath,
     {
@@ -27,10 +25,12 @@ async function uploadToCloudinary(file,tempName){
 
   return result.secure_url;
 }
+
 const fileUpload = require("express-fileupload");
 const cookieParser = require("cookie-parser");
 const fs = require("fs");
 const path = require("path");
+
 const PORT = process.env.PORT || 3000;
 const app = express();
 
@@ -54,41 +54,19 @@ app.use(session({
   saveUninitialized:false
 }));
 
-// app.use("/uploads", express.static(path.join(__dirname,"uploads")));
 app.use("/assets", express.static(path.join(__dirname,"assets")));
 
-/*
-function ensureFolder(folder){
-if(!fs.existsSync(folder)){
-fs.mkdirSync(folder,{ recursive:true });
-}
-}
-
-ensureFolder(path.join(__dirname,"uploads"));
-ensureFolder(path.join(__dirname,"uploads","avatars"));
-ensureFolder(path.join(__dirname,"uploads","banners"));
-ensureFolder(path.join(__dirname,"uploads","musics"));
-ensureFolder(path.join(__dirname,"uploads","videos"));
-*/
-
 async function connectDB(){
-
   if(!db){
-
     await client.connect();
-
     db = client.db("purple");
-
     console.log("Mongo conectado");
-
   }
 
   return db;
-
 }
 
 async function loadDB(){
-
   const database = await connectDB();
 
   const users = await database
@@ -97,11 +75,9 @@ async function loadDB(){
     .toArray();
 
   return { users };
-
 }
 
 async function saveDB(data){
-
   const database = await connectDB();
 
   await database.collection("users").deleteMany({});
@@ -109,7 +85,6 @@ async function saveDB(data){
   if(data.users?.length){
     await database.collection("users").insertMany(data.users);
   }
-
 }
 
 async function getUser(req){
@@ -179,13 +154,9 @@ function createDefaultUser(username,password="",email=""){
   };
 }
 
-/* HOME */
-
 app.get("/",(req,res)=>{
   res.sendFile(path.join(__dirname,"home.html"));
 });
-
-/* LOGIN */
 
 app.get("/login",(req,res)=>{
   res.sendFile(path.join(__dirname,"login.html"));
@@ -220,8 +191,6 @@ app.post("/login", async(req,res)=>{
   res.cookie("purple_user", user.username);
   res.redirect("/dashboard");
 });
-
-/* REGISTER */
 
 app.get("/register",(req,res)=>{
   res.sendFile(path.join(__dirname,"register.html"));
@@ -282,8 +251,6 @@ app.post("/register", async(req,res)=>{
   res.redirect("/dashboard");
 });
 
-/* DASHBOARD */
-
 app.get("/dashboard", async(req,res)=>{
   const user = await getUser(req);
 
@@ -293,8 +260,6 @@ app.get("/dashboard", async(req,res)=>{
 
   res.sendFile(path.join(__dirname,"dashboard.html"));
 });
-
-/* API */
 
 app.get("/api/me", async(req,res)=>{
   const user = await getUser(req);
@@ -308,8 +273,6 @@ app.get("/api/me", async(req,res)=>{
     user
   });
 });
-
-/* SAVE PROFILE */
 
 app.post("/save-profile",async(req,res)=>{
   const user = await getUser(req);
@@ -402,32 +365,32 @@ app.post("/save-profile",async(req,res)=>{
   target.steam = req.body.steam || "";
 
   if(req.files?.avatar){
-  target.avatar = await uploadToCloudinary(
-    req.files.avatar,
-    "avatar_" + Date.now()
-  );
-}
+    target.avatar = await uploadToCloudinary(
+      req.files.avatar,
+      "avatar_" + Date.now()
+    );
+  }
 
-if(req.files?.banner){
-  target.banner = await uploadToCloudinary(
-    req.files.banner,
-    "banner_" + Date.now()
-  );
-}
+  if(req.files?.banner){
+    target.banner = await uploadToCloudinary(
+      req.files.banner,
+      "banner_" + Date.now()
+    );
+  }
 
-if(req.files?.music){
-  target.music = await uploadToCloudinary(
-    req.files.music,
-    "music_" + Date.now()
-  );
-}
+  if(req.files?.music){
+    target.music = await uploadToCloudinary(
+      req.files.music,
+      "music_" + Date.now()
+    );
+  }
 
-if(req.files?.video){
-  target.video = await uploadToCloudinary(
-    req.files.video,
-    "video_" + Date.now()
-  );
-}
+  if(req.files?.video){
+    target.video = await uploadToCloudinary(
+      req.files.video,
+      "video_" + Date.now()
+    );
+  }
 
   await saveDB(db);
 
@@ -436,8 +399,6 @@ if(req.files?.video){
     user:target
   });
 });
-
-/* SAVE PREMIUM */
 
 app.post("/save-premium", async(req,res)=>{
  const user = await getUser(req);
@@ -469,10 +430,6 @@ app.post("/save-premium", async(req,res)=>{
     user:target
   });
 });
-
-/* PREMIUM */
-
-/* PREMIUM */
 
 app.get("/premium", async(req,res)=>{
 
@@ -598,7 +555,7 @@ const response = await fetch(
 const data = await response.json();
 
 console.log(data);
-SSS
+
 if(!data.init_point){
   return res.json(data);
 }
@@ -618,8 +575,6 @@ error:String(err)
 }
 
 });
-
-/* PAYMENT SUCCESS */
 
 app.get("/payment-success", async(req,res)=>{
 
@@ -654,13 +609,10 @@ res.redirect("/dashboard");
 
 });
 
-/* LOGOUT */
-
 app.get("/logout",(req,res)=>{
   res.clearCookie("purple_user");
   res.redirect("/");
 });
-/* DISCORD LOGIN */
 
 app.get("/auth/discord",(req,res)=>{
 
@@ -769,7 +721,6 @@ app.get("/auth/discord/callback",async(req,res)=>{
   }
 
 });
-/* PROFILE */
 
 app.get("/admin",(req,res)=>{
   if(String(req.query.key) !== String(ADMIN_KEY)){
@@ -812,9 +763,11 @@ app.post("/admin/premium", async(req,res)=>{
   const uid = Number(req.body.uid);
   const action = req.body.action;
 
- const user = db.users.find(
-  u => Number(u.uid) === uid
-);
+  const db = await loadDB();
+
+  const user = db.users.find(
+    u => Number(u.uid) === uid
+  );
 
   if(!user){
     return res.send("Usuário não encontrado.");
@@ -846,7 +799,6 @@ app.post("/admin/premium", async(req,res)=>{
     user.hideViews = "off";
 
   }
-
 
   await saveDB(db);
 
@@ -1016,7 +968,5 @@ if(!user){
     res.send(html);
   });
 });
-
-/* START */
 
 module.exports = app;
