@@ -861,9 +861,13 @@ app.get("/:username", async(req,res,next)=>{
 
   const db = await loadDB();
 
-  const user = db.users.find(
-    u=>String(u.username || "").toLowerCase() === String(username || "").toLowerCase()
-  );
+if(!db.users){
+  db.users = [];
+}
+
+const user = db.users.find(
+  u => Number(u.uid) === uid
+);
 
   if(!user){
     return res.send("Perfil não encontrado.");
