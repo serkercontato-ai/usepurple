@@ -429,16 +429,6 @@ if(req.files?.video){
   );
 }
 
-  if(req.files?.video){
-    const video = req.files.video;
-    const fileName = Date.now() + "-" + video.name;
-    const uploadPath = path.join(__dirname,"uploads","videos",fileName);
-
-    await video.mv(uploadPath);
-
-    target.video = "/uploads/videos/" + fileName;
-  }
-
   await saveDB(db);
 
   res.json({
