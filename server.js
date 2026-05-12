@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 const express = require("express");
+const ADMIN_KEY = "nextageadmin123";
 const { MongoClient } = require("mongodb");
 const session = require("express-session");
 const fileUpload = require("express-fileupload");
