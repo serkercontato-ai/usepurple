@@ -584,6 +584,10 @@ const response = await fetch(
 const data = await response.json();
 
 console.log(data);
+SSS
+if(!data.init_point){
+  return res.json(data);
+}
 
 return res.redirect(data.init_point);
 
@@ -794,11 +798,9 @@ app.post("/admin/premium", async(req,res)=>{
   const uid = Number(req.body.uid);
   const action = req.body.action;
 
-  const db = await loadDB();
-
-  const user = db.users.find(
-    u => Number(u.uid) === uid
-  );
+ const user = await usersCollection.findOne({
+  uid:uid
+});
 
   if(!user){
     return res.send("Usuário não encontrado.");
@@ -831,7 +833,12 @@ app.post("/admin/premium", async(req,res)=>{
 
   }
 
-  await saveDB(db);
+  await usersCollection.updateOne(
+  { uid:uid },
+  {
+    $set:user
+  }
+);
 
   res.send(`
   <body style="background:#07000d;color:white;font-family:Arial;padding:40px">
