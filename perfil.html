@@ -225,6 +225,16 @@ body{
 {{videoBlock}}
 
 <div class="bg" id="profileBg"></div>
+<video id="bgVideo" autoplay muted loop playsinline style="
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+object-fit:cover;
+z-index:-2;
+display:none;
+"></video>
 <div class="overlay"></div>
 
 <div class="center">
@@ -266,10 +276,25 @@ document.documentElement.style.setProperty("--cardOpacity", cardOpacity / 100);
 
 const bg = document.getElementById("profileBg");
 
+const bgVideo = document.getElementById("bgVideo");
+
 if(backgroundMode === "image" && banner){
-  bg.style.backgroundImage = `url('${banner}')`;
+
+bg.style.backgroundImage = `url('${banner}')`;
+bgVideo.style.display = "none";
+
+}else if(backgroundMode === "video" && banner){
+
+bg.style.backgroundImage = "none";
+
+bgVideo.src = banner;
+bgVideo.style.display = "block";
+
 }else{
-  bg.style.backgroundImage = "none";
+
+bg.style.backgroundImage = "none";
+bgVideo.style.display = "none";
+
 }
 
 bg.style.filter = `brightness(${brightness}%) blur(${blur}px)`;
