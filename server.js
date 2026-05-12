@@ -278,6 +278,28 @@ app.get("/api/me", async(req,res)=>{
   });
 });
 
+app.get("/cloudinary-signature",(req,res)=>{
+
+const timestamp =
+Math.round(new Date().getTime()/1000);
+
+const signature =
+cloudinary.utils.api_sign_request(
+{
+timestamp
+},
+process.env.CLOUDINARY_API_SECRET
+);
+
+res.json({
+timestamp,
+signature,
+cloudName:process.env.CLOUDINARY_CLOUD_NAME,
+apiKey:process.env.CLOUDINARY_API_KEY
+});
+
+});
+
 app.post("/save-profile",async(req,res)=>{
   const user = await getUser(req);
 

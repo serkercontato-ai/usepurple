@@ -2085,6 +2085,31 @@ updatePreview();
 
 /* SAVE */
 
+async function uploadDirect(file){
+
+  const signReq = await fetch("/cloudinary-signature");
+  const signData = await signReq.json();
+
+  const formData = new FormData();
+
+  formData.append("file", file);
+  formData.append("api_key", signData.apiKey);
+  formData.append("timestamp", signData.timestamp);
+  formData.append("signature", signData.signature);
+
+  const upload = await fetch(
+    `https://api.cloudinary.com/v1_1/${signData.cloudName}/auto/upload`,
+    {
+      method:"POST",
+      body:formData
+    }
+  );
+
+  const data = await upload.json();
+
+  return data.secure_url;
+}
+
 document
 .getElementById("profileForm")
 .addEventListener("submit",async(e)=>{
@@ -2162,53 +2187,97 @@ return;
 }
 }
 
+const avatarInput = document.getElementById("avatarInput");
+const bannerInput = document.getElementById("bannerInput");
+const musicInput = document.getElementById("musicInput");
+const videoInput = document.getElementById("videoInput");
+
+let avatarUrl = currentUser.avatar || "";
+let bannerUrl = currentUser.banner || "";
+let musicUrl = currentUser.music || "";
+let videoUrl = currentUser.video || "";
+
+if(avatarInput.files[0]){
+avatarUrl =
+await uploadDirect(avatarInput.files[0]);
+}
+
+if(bannerInput.files[0]){
+bannerUrl =
+await uploadDirect(bannerInput.files[0]);
+}
+
+if(musicInput.files[0]){
+musicUrl =
+await uploadDirect(musicInput.files[0]);
+}
+
+if(videoInput.files[0]){
+videoUrl =
+await uploadDirect(videoInput.files[0]);
+}
+
+const payload = {
+username:
+document.getElementById("username").value,
+
+bio:
+document.getElementById("bio").value,
+
+location:
+document.getElementById("location").value,
+
+avatar:avatarUrl,
+banner:bannerUrl,
+music:musicUrl,
+video:videoUrl
+};
+
 const req =
 await fetch("/save-profile",{
 method:"POST",
-body:form
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify(payload)
 });
 
-const res =
-await req.json();
+const res = await req.json();
 
 if(res.success){
-
 currentUser = res.user || currentUser;
 
 if(currentUser.avatar){
-  document.getElementById("miniAvatar").src = currentUser.avatar;
-  document.getElementById("previewAvatar").src = currentUser.avatar;
+document.getElementById("miniAvatar").src = currentUser.avatar;
+document.getElementById("previewAvatar").src = currentUser.avatar;
 }
 
 if(currentUser.banner){
-  document.getElementById("previewBg").style.backgroundImage =
-  `url('${currentUser.banner}')`;
+document.getElementById("previewBg").style.backgroundImage =
+`url('${currentUser.banner}')`;
 }
 
 if(currentUser.video){
-  const video = document.getElementById("previewVideo");
-  video.src = currentUser.video;
-  video.style.display = "block";
-  video.load();
+const video = document.getElementById("previewVideo");
+video.src = currentUser.video;
+video.style.display = "block";
+video.load();
 }
 
 if(currentUser.music){
-  const audio = document.getElementById("previewMusic");
-  audio.src = currentUser.music;
-  audio.volume = 0.5;
-  audio.load();
+const audio = document.getElementById("previewMusic");
+audio.src = currentUser.music;
+audio.volume = 0.5;
+audio.load();
 }
 
 showToast();
 
 }else{
-
 alert(res.error || "Erro ao salvar perfil.");
-
 }
 
 });
-
 
 if(document.getElementById("saveLinksBtn")){
 document.getElementById("saveLinksBtn").onclick=()=>{
