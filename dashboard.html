@@ -2218,19 +2218,31 @@ await uploadDirect(videoInput.files[0]);
 }
 
 const payload = {
-username:
-document.getElementById("username").value,
+  username: document.getElementById("username").value,
+  bio: document.getElementById("bio").value,
+  location: document.getElementById("location").value,
 
-bio:
-document.getElementById("bio").value,
+  backgroundMode: document.getElementById("backgroundMode").value,
 
-location:
-document.getElementById("location").value,
+  accentColor: document.getElementById("accentColor").value,
+  accentColor2: document.getElementById("accentColor2").value,
+  iconColor: document.getElementById("iconColor").value,
 
-avatar:avatarUrl,
-banner:bannerUrl,
-music:musicUrl,
-video:videoUrl
+  opacity: document.getElementById("opacity").value,
+  blur: document.getElementById("blur").value,
+  brightness: document.getElementById("brightness").value,
+  cardOpacity: document.getElementById("cardOpacity").value,
+
+  glow: isOn("glowSwitch"),
+  gradientName: isOn("gradientNameSwitch"),
+  iconGlow: isOn("iconGlowSwitch"),
+  hideViews: isOn("hideViewsSwitch"),
+  showCard: isOn("showCardSwitch"),
+
+  avatar: avatarUrl,
+  banner: bannerUrl,
+  music: musicUrl,
+  video: videoUrl
 };
 
 const req =
